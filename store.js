@@ -11,6 +11,13 @@ const store = createStore({
         }
     },
     mutations : {
+        init(state){
+            state.weeklyHour = 15;
+            state.weeklyMinute = 0;
+            state.nightHour = 0;
+            state.nightMinute = 0;
+            state.wage = 9860;
+        }
     },
     actions : {
     }

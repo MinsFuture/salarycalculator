@@ -35,7 +35,7 @@
         <p>분</p>
       </div>
       <span id="nightHelpInline" class="form-text">
-          22시 ~ 06시까지 일한 시간을 말해요
+          • 22시 ~ 06시까지 일한 시간을 말해요
         </span>
     </div>
 
@@ -50,7 +50,7 @@
         <p>원</p>
       </div>
       <span class="form-text">
-          2024년 최저 시급은 9,860원 입니다
+          • 2024년 최저 시급은 9,860원 입니다
       </span>
     </div>
 
@@ -64,8 +64,14 @@
         <h3>내가 일주일에 받는 야간수당은 <span :class="{ 'text-danger': nightAllowance >= 0 }">{{
             nightAllowance.toLocaleString()
           }}</span> 원 입니다</h3>
+        <h3>내가 이번주에 받는 주급은 <span :class="{ 'text-danger': weeklySalary >= 0 }">{{
+            weeklySalary.toLocaleString()
+          }}</span> 원 입니다</h3>
         <h3>내가 받는 총 월급은 <span :class="{ 'text-danger': monthSalary >= 0 }">{{ monthSalary.toLocaleString() }}</span> 원
           입니다</h3>
+        <span class="form-text">
+          • 위 월급은 한 달을 4.345주로 계산한 예상 급여입니다.
+        </span>
         <div class="form-check">
           <input @click="보험클릭" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
           <label class="form-check-label" for="flexRadioDefault1">
@@ -78,6 +84,12 @@
             원천징수 적용 3.3%
           </label>
         </div>
+        <div class="form-check">
+          <input @click="미적용클릭" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault3">
+          <label class="form-check-label" for="flexRadioDefault3">
+            미적용 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          </label>
+        </div>
       </div>
     </div>
 
@@ -87,19 +99,35 @@
 <script>
 export default {
   name: "WeeklyNightComp",
+  created() {
+    this.$store.commit('init');
+    this.init();
+  },
   data() {
     return {
       weeklyAllowance: 0,
       nightAllowance: 0,
+      weeklySalary : 0,
       monthSalary: 0,
       insuranceCheck: true,
+      noInsurance : false,
     }
   },
   methods: {
+    init(){
+      this.weeklyAllowance = 0;
+      this.nightAllowance = 0;
+      this.weeklySalary = 0;
+      this.monthSalary = 0;
+      this.insuranceCheck = true;
+      this.noInsurance = false;
+    },
+
     calculate() {
       this.주휴수당계산();
       this.야간수당계산();
-      this.월급계산()
+      this.주급계산();
+      this.월급계산();
     },
 
     주휴수당계산() {
@@ -118,7 +146,14 @@ export default {
 
       this.nightAllowance = Math.round(totalHour * this.$store.state.wage * 0.5);
       console.log(this.nightAllowance);
+    },
 
+    주급계산(){
+      // 일주일 총 근로시간
+      let totalHour = (this.$store.state.weeklyHour + this.$store.state.weeklyMinute / 60);
+
+      // 주급
+      this.weeklySalary = totalHour * this.$store.state.wage + this.weeklyAllowance + this.nightAllowance;
     },
 
     월급계산() {
@@ -134,15 +169,26 @@ export default {
       } else{
         this.monthSalary = Math.round((totalWeekSalary * 4.345) * ((100 - 3.3) / 100));
       }
+
+      if(this.noInsurance === true){
+        this.monthSalary = Math.round(totalWeekSalary * 4.345);
+      }
     },
 
     보험클릭() {
       this.insuranceCheck = true;
+      this.noInsurance = false;
       this.월급계산();
     },
 
     원천징수클릭() {
       this.insuranceCheck = false;
+      this.noInsurance = false;
+      this.월급계산();
+    },
+
+    미적용클릭(){
+      this.noInsurance = true;
       this.월급계산();
     }
   },
