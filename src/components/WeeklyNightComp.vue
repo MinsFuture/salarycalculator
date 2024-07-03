@@ -161,7 +161,7 @@ export default {
       let totalHour = (this.$store.state.weeklyHour + this.$store.state.weeklyMinute / 60);
 
       // 주급
-      let totalWeekSalary = totalHour * this.$store.state.wage + this.weeklyAllowance + this.nightAllowance;
+      let totalWeekSalary = Math.round(totalHour * this.$store.state.wage + this.weeklyAllowance + this.nightAllowance);
 
       // 월급
       if (this.insuranceCheck === true) {
